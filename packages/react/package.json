@@ -6,7 +6,7 @@
   "exports": {
     ".": {
       "types": "./src/index.tsx",
-      "import": "./dist/index.js"
+      "import": "./src/index.tsx"
     }
   },
   "scripts": {
@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@types/react": "^19.1.12",
-    "react": "^19.1.1",
+    "react": "^19.2.0",
     "tsup": "^8.5.0",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
