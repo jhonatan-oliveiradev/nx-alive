@@ -1,0 +1,30 @@
+{
+  "name": "@nx-alive/react",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.tsx",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.tsx --format esm --dts --clean --external react --external react/jsx-runtime",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@nx-alive/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.12",
+    "react": "^19.1.1",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
