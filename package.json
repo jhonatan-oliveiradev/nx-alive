@@ -2,13 +2,20 @@
   "name": "nx-alive",
   "private": true,
   "version": "0.0.0",
-  "packageManager": "pnpm@10.15.1",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10"
+  },
   "scripts": {
-    "dev": "pnpm --filter @nx-alive/studio dev",
+    "dev": "npm run dev --workspace=@nx-alive/studio",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "check": "pnpm typecheck && pnpm test && pnpm build"
+    "check": "npm run typecheck && npm test && npm run build"
   },
   "devDependencies": {
     "tsup": "^8.5.0",
