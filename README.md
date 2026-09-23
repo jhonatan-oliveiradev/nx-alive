@@ -54,18 +54,20 @@ import { pingCharacter } from "@nx-alive/presets";
 
 ## Local development
 
-Requires Node 22+ and pnpm 10.
+Requires Node 22+ and npm 10+.
 
 ```bash
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
 Validation:
 
 ```bash
-pnpm check
+npm run check
 ```
+
+The repository uses native **npm workspaces** for `apps/*` and `packages/*`. No pnpm installation is required.
 
 ## Product direction
 
