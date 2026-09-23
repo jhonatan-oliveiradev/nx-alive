@@ -7,7 +7,7 @@ NX Alive is a character creation and runtime platform for expressive 2D mascots,
 It is not a GIF maker and not a PING-specific mascot runtime. The product is built around a portable character document that can be authored visually and consumed by applications.
 
 ```text
-NX Alive Studio
+NX Alive Studio (Next.js)
       ↓
 .character.json
       ↓
@@ -15,18 +15,14 @@ NX Alive Studio
       ↓
 @nx-alive/react
       ↓
-Next.js / Vite / Electron / product UI
+Next.js / React / Electron / product UI
 ```
 
-## Gate 0
-
-The first gate proves the architecture with the PING mascot as a stress test.
-
-Current workspace:
+## Workspace
 
 ```text
 apps/
-  studio/             visual authoring shell
+  studio/             Next.js App Router visual authoring product
 
 packages/
   core/               schema, validation, scene graph, state resolution
@@ -41,31 +37,48 @@ docs/
 
 The runtime contains no PING-specific geometry. PING lives in `ping.character.json`.
 
+## Studio stack
+
+The product shell uses the same web stack intended for the rest of the NX ecosystem:
+
+- Next.js App Router
+- React
+- TypeScript
+- Tailwind CSS v4
+- shadcn/ui-ready aliases and utilities
+- npm workspaces
+
+The character engine remains framework-independent.
+
 ## Character API
 
 ```tsx
 import { Character } from "@nx-alive/react";
 import { pingCharacter } from "@nx-alive/presets";
 
-<Character document={pingCharacter} state="happy" />
+<Character document={pingCharacter} state="idle" />
 <Character document={pingCharacter} state="password" />
 <Character document={pingCharacter} state="error" />
 ```
 
 ## Local development
 
-Requires Node 22+ and pnpm 10.
+Requires Node 22+ and npm 10+.
 
 ```bash
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
+
+Open `http://localhost:3000`. The root redirects to the PING character editor. The library is available at `/characters`.
 
 Validation:
 
 ```bash
-pnpm check
+npm run check
 ```
+
+No pnpm installation or pre-build of workspace packages is required for development.
 
 ## Product direction
 
