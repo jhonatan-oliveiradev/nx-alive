@@ -1,66 +1,54 @@
-import type {
-  Appearance,
-  CharacterDocument,
-  CharacterPart,
-  Transform2D,
-} from "./schema";
-
-function mergeTransform(base: Transform2D, patch?: Partial<Transform2D>): Transform2D {
-  return patch ? { ...base, ...patch } : base;
-}
-
-function mergeAppearance(base: Appearance, patch?: Appearance): Appearance {
-  return patch ? { ...base, ...patch } : base;
-}
-
-export function resolveExpression(
-  document: CharacterDocument,
-  expressionId?: string,
-): CharacterPart[] {
-  const expression = expressionId ? document.expressions[expressionId] : undefined;
-  const patches = new Map(expression?.patches.map((patch) => [patch.partId, patch]) ?? []);
-
-  return document.parts.map((part) => {
-    const patch = patches.get(part.id);
-    if (!patch) return part;
-    return {
-      ...part,
-      visible: patch.visible ?? part.visible,
-      transform: mergeTransform(part.transform, patch.transform),
-      appearance: mergeAppearance(part.appearance, patch.appearance),
-      shape: patch.shape ?? part.shape,
-    };
-  });
-}
-
-export function resolveCharacterState(
-  document: CharacterDocument,
-  stateId = document.defaultState,
-) {
-  const resolvedStateId = document.states[stateId] ? stateId : document.defaultState;
-  const state = document.states[resolvedStateId];
-
+import type { AnimationFrame, CharacterDocument } from "./schema";
+export function resolveExpression(document: CharacterDocument, id?: string) {
+  const e =
+    id && Object.hasOwn(document.expressions, id)
+      ? document.expressions[id]
+      : undefined;
   return {
-    stateId: resolvedStateId,
-    expressionId: state?.expression,
-    animationId: state?.animation,
-    parts: resolveExpression(document, state?.expression),
+    ...document.face,
+    eyes: e?.eyes ?? document.face.eyes,
+    mouth: e?.mouth ?? document.face.mouth,
+    x: document.face.x + (e?.x ?? 0),
+    y: document.face.y + (e?.y ?? 0),
+    eyeScale: document.face.eyeScale * (e?.eyeScale ?? 1),
+    tilt: e?.tilt ?? 0,
+    blush: e?.blush ?? false,
   };
 }
-
-export function buildPartTree(parts: CharacterPart[]) {
-  const children = new Map<string | null, CharacterPart[]>();
-
-  for (const part of parts) {
-    const key = part.parentId ?? null;
-    const list = children.get(key) ?? [];
-    list.push(part);
-    children.set(key, list);
-  }
-
-  for (const list of children.values()) {
-    list.sort((a, b) => a.zIndex - b.zIndex);
-  }
-
-  return children;
+export function resolveAnimation(document: CharacterDocument, id?: string) {
+  return id && Object.hasOwn(document.animations, id)
+    ? document.animations[id]
+    : undefined;
+}
+export const restFrame: AnimationFrame = {
+  at: 0,
+  x: 0,
+  y: 0,
+  rotation: 0,
+  scaleX: 1,
+  scaleY: 1,
+};
+export function sampleAnimation(
+  document: CharacterDocument,
+  id: string,
+  timeMs: number,
+): AnimationFrame {
+  const a = resolveAnimation(document, id);
+  if (!a) return { ...restFrame };
+  const t = a.loop
+    ? (Math.max(0, timeMs) % a.durationMs) / a.durationMs
+    : Math.min(1, Math.max(0, timeMs) / a.durationMs);
+  const i = a.frames.findIndex((f) => f.at >= t);
+  const end = a.frames[Math.max(0, i)]!;
+  const start = a.frames[Math.max(0, i - 1)]!;
+  const raw = end.at === start.at ? 0 : (t - start.at) / (end.at - start.at);
+  const p = raw * raw * (3 - 2 * raw);
+  return {
+    at: t,
+    x: start.x + (end.x - start.x) * p,
+    y: start.y + (end.y - start.y) * p,
+    rotation: start.rotation + (end.rotation - start.rotation) * p,
+    scaleX: start.scaleX + (end.scaleX - start.scaleX) * p,
+    scaleY: start.scaleY + (end.scaleY - start.scaleY) * p,
+  };
 }
