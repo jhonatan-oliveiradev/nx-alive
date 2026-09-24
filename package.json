@@ -12,13 +12,18 @@
     "npm": ">=10"
   },
   "scripts": {
-    "dev": "npm run dev --workspace=@nx-alive/studio",
+    "dev": "node scripts/dev.mjs",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "check": "npm run typecheck && npm test && npm run build"
+    "check": "npm run typecheck && npm test && npm run build",
+    "build:exports": "node scripts/build-exports.mjs",
+    "predev": "npm run build:exports",
+    "prebuild": "npm run build:exports"
   },
   "devDependencies": {
+    "esbuild": "^0.28.2",
+    "prettier": "^3.9.9",
     "tsup": "^8.5.0",
     "turbo": "^2.5.6",
     "typescript": "^5.9.2",

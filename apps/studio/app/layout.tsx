@@ -1,21 +1,4 @@
-import type { Metadata } from "next";
-import type { ReactNode } from "react";
-
-import "./globals.css";
-
-export const metadata: Metadata = {
-  title: {
-    default: "NX Alive",
-    template: "%s · NX Alive",
-  },
-  description:
-    "Create expressive 2D characters that live inside digital products.",
-};
-
-export default function RootLayout({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body>{children}</body>
-    </html>
-  );
-}
+import type { Metadata } from 'next';
+import './globals.css';
+export const metadata:Metadata={title:'NX Alive — Character Studio',description:'Small shapes. Big personality. Create simple, expressive animated mascots and bring them into your product.'};
+export default function Layout({children}:{children:React.ReactNode}){return <html lang="en"><body>{children}</body></html>;}

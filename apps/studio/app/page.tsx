@@ -1,5 +1,2 @@
-import { redirect } from "next/navigation";
-
-export default function HomePage() {
-  redirect("/characters/ping");
-}
+import { CharacterStudio } from '@/features/character-editor/character-studio';
+export default function Home(){return <CharacterStudio/>;}
