@@ -1,37 +1,7 @@
 # Roadmap
 
-## Gate 0 — Foundation
+Delivered in the simple Character Studio: cohesive mascots, expressions, motion, pose controls, local persistence, history, static photos, portable JSON and standalone integration demos.
 
-- [x] monorepo boundaries
-- [x] `.character.json` draft schema
-- [x] validation and scene graph
-- [x] expression patches
-- [x] semantic states
-- [x] animation track schema
-- [x] React/SVG renderer
-- [x] PING stress-test character
-- [x] Studio foundation shell
-- [ ] CI green
-- [ ] visual QA
+Next: deeper custom motion controls, more body shapes, published runtime packages and explicit migration tooling. Keep the simple body + face authoring model.
 
-**Exit:** PING renders entirely from data; no PING-specific geometry exists in the runtime.
-
-## Gate 1 — Visual part editor
-
-Selection, transform handles, drag/resize/rotate, layers, editable inspector, primitives, custom SVG import, undo/redo, persistence and JSON export.
-
-## Gate 2 — Face, pose and expressions
-
-Face editor, eye/mouth presets, pose snapshots, expression authoring, interpolation preview and look-at/cursor tracking.
-
-## Gate 3 — Timeline and animation
-
-Keyframe timeline, easing, loops, animation layers and reusable motion presets.
-
-## Gate 4 — Runtime and export
-
-Animation player, stable React API, Web Component, SVG/PNG export, package-size budget and Next/Vite/Electron examples.
-
-## Gate 5 — Behavior Graph and ecosystem
-
-Event → behavior graph, reusable packs, Creative Studio integration, plugin API and optional AI-assisted authoring.
+Deferred: AI generation, behavior graph, marketplace, accounts, billing, teams, collaboration, cloud database, full vector editing, bones/IK, 3D and physics.

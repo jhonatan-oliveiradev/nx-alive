@@ -1,43 +1,13 @@
-# `.character.json` draft format
+# Character v2
 
-A character document contains a canvas, scene-graph parts, expressions, animation tracks and semantic states.
+A character has one body definition, one face, a pose, colors, metadata and reusable expression/animation maps. See `packages/core/src/schema.ts` for the executable contract and `packages/presets/src/index.ts` for complete examples.
 
-## Parts
+- Canvas: width/height in SVG units (presets use 400×400).
+- Body: circle, blob, cloud, capsule, rounded-square or custom path/viewBox; optional visor and antennas.
+- Face: eye and mouth presets, spacing, scale, rotation and offsets.
+- Pose: x/y, overall scale, width/height and X/Y/Z orientation. X/Y are a 2D approximation.
+- Colors: six-digit hex values; no external paint URLs.
+- Expressions: eye/mouth selection, relative face offsets, scale, tilt and blush.
+- Animations: strictly ordered normalized frames from 0 to 1, duration, loop and valid expression reference. Frames transform the whole body; no individual bones.
 
-Gate 0 supports:
-
-- `group`
-- `circle`
-- `ellipse`
-- `rounded-rect`
-- `capsule`
-- `path`
-
-A part can reference `parentId`, making transforms local to that parent.
-
-## Expressions
-
-Expressions are sparse patches over the base character:
-
-```json
-{
-  "id": "sleeping",
-  "name": "Sleeping",
-  "patches": [
-    {
-      "partId": "left-eye",
-      "shape": { "kind": "path", "d": "M -14 0 Q 0 6 14 0" }
-    }
-  ]
-}
-```
-
-## Semantic states
-
-Products integrate at the state level:
-
-```tsx
-<Character document={ping} state="password" />
-```
-
-A state maps to an expression and optionally an animation. This keeps product logic independent from SVG geometry.
+Use `parseCharacterDocument(unknown)` at input boundaries and `serializeCharacter(document)` for export. Invalid nested objects, non-finite transforms, unsupported versions and missing expression references are rejected. Imports discard unknown fields. Custom SVG never becomes raw injected markup.
