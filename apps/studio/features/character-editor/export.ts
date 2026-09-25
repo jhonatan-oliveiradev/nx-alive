@@ -155,7 +155,7 @@ export async function buildDemoZip(
       `export default function Layout({children}:{children:React.ReactNode}) {return <html lang="en"><body style={{margin:0,background:'#111419',color:'white'}}>{children}</body></html>}`,
     );
     files["app/page.tsx"] = strToU8(
-      `'use client';\nimport {createCharacter} from '../runtime/react.mjs';\nimport character from '../character.character.json';\nconst Mascot=createCharacter(character);\nexport default function Page(){return <main style={{width:480,maxWidth:'100%',margin:'10vh auto'}}><Mascot animation=${JSON.stringify(animation)}/></main>}`,
+      `'use client';\nimport {createCharacter} from '../runtime/react.mjs';\nimport character from '../character.character.json';\nconst Mascot=createCharacter(character);\nexport default function Page(){return <main style={{width:480,maxWidth:'100%',height:480,margin:'10vh auto'}}><Mascot animation=${JSON.stringify(animation)}/></main>}`,
     );
     files["runtime/react.d.mts"] = strToU8(
       `import type {ComponentType,HTMLAttributes} from 'react';\nexport declare function createCharacter(document:unknown):ComponentType<HTMLAttributes<HTMLDivElement>&{animation?:string;expression?:string;playing?:boolean}>;`,
@@ -173,7 +173,7 @@ export async function buildDemoZip(
       ),
     );
     files["index.html"] = strToU8(
-      `<html lang="en"><meta charset="utf-8"><title>${d.name.replace(/[<>&"]/g, "")} · NX Alive</title><body style="background:#111419"><div id="mascot" style="width:480px;max-width:100%;margin:10vh auto"></div><script type="module">import {mountCharacter} from './runtime/character.mjs';const character=await fetch('./character.character.json').then(r=>r.json());mountCharacter(document.querySelector('#mascot'),character,{animation:${JSON.stringify(animation)}});</script></body></html>`,
+      `<html lang="en"><meta charset="utf-8"><title>${d.name.replace(/[<>&"]/g, "")} · NX Alive</title><body style="background:#111419"><div id="mascot" style="width:480px;max-width:100%;height:480px;margin:10vh auto"></div><script type="module">import {mountCharacter} from './runtime/character.mjs';const character=await fetch('./character.character.json').then(r=>r.json());mountCharacter(document.querySelector('#mascot'),character,{animation:${JSON.stringify(animation)}});</script></body></html>`,
     );
     files["server.mjs"] = strToU8(
       `import {createServer} from 'node:http';import {readFile} from 'node:fs/promises';const files={'/':'index.html','/index.html':'index.html','/runtime/character.mjs':'runtime/character.mjs','/character.character.json':'character.character.json'};createServer(async(req,res)=>{const p=files[req.url];if(!p){res.writeHead(404);res.end();return;}try{res.setHeader('Content-Type',p.endsWith('.mjs')?'text/javascript':p.endsWith('.json')?'application/json':'text/html');res.end(await readFile(new URL(p,import.meta.url)));}catch{res.writeHead(500);res.end();}}).listen(3000);`,

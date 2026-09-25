@@ -40,8 +40,8 @@ export const poseSchema = z.object({
   scale: number(0.3, 1.6),
   width: number(0.5, 1.5),
   height: number(0.5, 1.5),
-  rotationX: number(-60, 60),
-  rotationY: number(-60, 60),
+  rotationX: number(-180, 180),
+  rotationY: number(-180, 180),
   rotationZ: number(-180, 180),
 });
 export const faceSchema = z.object({
