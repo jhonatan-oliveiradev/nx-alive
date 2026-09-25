@@ -11,6 +11,8 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@fontsource/dm-sans": "^5.3.0",
+    "@fontsource/space-grotesk": "^5.3.0",
     "@nx-alive/core": "0.0.1",
     "@nx-alive/presets": "0.0.1",
     "@nx-alive/react": "0.0.1",

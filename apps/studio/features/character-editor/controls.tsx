@@ -27,7 +27,12 @@ export function Modal({
               <Dialog.Description>{description}</Dialog.Description>
             </div>
             <Dialog.Close asChild>
-              <Button size="icon" variant="ghost" aria-label="Close dialog">
+              <Button
+                size="icon"
+                variant="ghost"
+                aria-label="Close dialog"
+                onClick={() => onOpenChange(false)}
+              >
                 <X size={18} />
               </Button>
             </Dialog.Close>

@@ -7,21 +7,27 @@
     ".": {
       "types": "./src/index.tsx",
       "import": "./src/index.tsx"
+    },
+    "./three": {
+      "types": "./src/three.tsx",
+      "import": "./src/three.tsx"
     }
   },
   "scripts": {
-    "build": "tsup src/index.tsx --format esm --dts --clean --external react --external react/jsx-runtime",
+    "build": "tsup src/index.tsx src/three.tsx --format esm --dts --clean --external react --external react/jsx-runtime",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@nx-alive/core": "0.0.1"
+    "@nx-alive/core": "0.0.1",
+    "three": "^0.186.1"
   },
   "peerDependencies": {
     "react": ">=18.2.0"
   },
   "devDependencies": {
     "@types/react": "^19.1.12",
+    "@types/three": "^0.186.0",
     "react": "^19.2.0",
     "tsup": "^8.5.0",
     "typescript": "^5.9.2",

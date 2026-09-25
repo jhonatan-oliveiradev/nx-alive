@@ -2,6 +2,11 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Camera,
+  Grid3X3,
+  Box,
+  ZoomIn,
+  ZoomOut,
+  ArrowUpRight,
   Check,
   ChevronRight,
   CircleHelp,
@@ -25,6 +30,7 @@ import {
   X,
 } from "lucide-react";
 import { Character } from "@nx-alive/react";
+import { Character3D, type Character3DHandle } from "@nx-alive/react/three";
 import {
   createId,
   bodyTypes,
@@ -78,6 +84,9 @@ const title = (s: string) =>
 const freshId = () => createId();
 
 export function CharacterStudio({ initialId }: { initialId?: string }) {
+  const viewportRef = useRef<Character3DHandle>(null);
+  const [guides, setGuides] = useState(false),
+    [zoom, setZoom] = useState(1);
   const [history, setHistory] = useState<History>(() => ({
     past: [],
     present: initialState(),
@@ -266,6 +275,23 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
       : `import { mountCharacter } from './runtime/character.mjs'\n\nconst character = await fetch(\n  './character.character.json'\n).then(r => r.json())\n\nmountCharacter(element, character, {\n  animation: '${exportIds[0] ?? ""}'\n})`;
   return (
     <main className={`studio ${photoMode ? "photo-mode" : ""}`}>
+      <nav className="editor-tabs" aria-label="Editor sections">
+        {tabs.map(([id, label, Icon]) => (
+          <button
+            type="button"
+            aria-current={tab === id ? "page" : undefined}
+            className={tab === id ? "active" : ""}
+            key={id}
+            onClick={() => {
+              setPhotoMode(false);
+              setTab(id);
+            }}
+          >
+            <Icon size={19} />
+            <span>{label}</span>
+          </button>
+        ))}
+      </nav>
       <section
         className={`stage ${photoMode && background === "transparent" ? "checker" : ""}`}
         style={photoMode && bg ? { background: bg } : undefined}
@@ -280,8 +306,14 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
               NX <b>Alive</b>
             </strong>
             <span className="brand-divider" />
-            <small>Character studio</small>
+            <small>Studio</small>
           </a>
+          <div className="workspace-title">
+            <span>Workspace</span>
+            <ChevronRight size={13} />
+            <strong>{d.name}</strong>
+            <span className="local-badge">LOCAL</span>
+          </div>
           <div className="stage-history">
             <Button
               variant="ghost"
@@ -302,6 +334,16 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
               title="Redo · Ctrl Shift Z"
             >
               <Redo2 size={17} />
+            </Button>
+            <Button
+              className="header-export"
+              variant="default"
+              onClick={() => {
+                setPhotoMode(false);
+                setTab("export");
+              }}
+            >
+              <ArrowUpRight size={15} /> Export character
             </Button>
           </div>
         </header>
@@ -333,58 +375,108 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
           </Button>
         </div>
         <div className="hero-space">
-          <Character
-            key={`${d.id}-${restart}`}
+          <div className="stage-orbit" aria-hidden="true" />
+          <Character3D
+            ref={viewportRef}
             document={d}
             expression={state.expression}
             animation={state.animation}
             playing={playing && !photoMode}
             ambient={!photoMode}
-            lookAt={state.preferences.lookAt && !photoMode}
-            hoverReaction={state.preferences.hover && !photoMode}
+            guides={guides && !photoMode}
+            zoom={zoom}
+            restartKey={restart}
             className="hero-character"
-            onAnimationEnd={(e) => {
-              if (
-                (e.target as Element).classList.contains("nx-motion") &&
-                d.animations[state.animation]?.loop === false
-              )
-                setPlaying(false);
-            }}
+            onPoseChange={(pose) => change({ ...d, pose })}
+            onComplete={() => setPlaying(false)}
           />
-          <div
-            className="orientation"
-            aria-label={`Orientation X ${d.pose.rotationX}, Y ${d.pose.rotationY}, Z ${d.pose.rotationZ}`}
-          >
-            <svg viewBox="0 0 64 64" aria-hidden="true">
-              <circle cx="32" cy="32" r="25" />
-              <ellipse
-                cx="32"
-                cy="32"
-                rx="11"
-                ry="25"
-                transform={`rotate(${d.pose.rotationZ + 20} 32 32)`}
-              />
-              <path d="M 8 37 L 56 27" />
-            </svg>
-            <span>
-              <i />X <i />Y <i />Z
-            </span>
+          <div className="viewport-tools" aria-label="Viewport tools">
+            <button
+              type="button"
+              onClick={() => setGuides((v) => !v)}
+              aria-pressed={guides}
+              title="Surface guides"
+            >
+              <Grid3X3 size={16} />
+              <span>Surface</span>
+            </button>
+            <span className="tool-divider" />
+            <button
+              type="button"
+              onClick={() =>
+                change({
+                  ...d,
+                  pose: { ...d.pose, rotationX: 0, rotationY: 0, rotationZ: 0 },
+                })
+              }
+            >
+              Front
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                change({
+                  ...d,
+                  pose: {
+                    ...d.pose,
+                    rotationX: 0,
+                    rotationY: 90,
+                    rotationZ: 0,
+                  },
+                })
+              }
+            >
+              Side
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                change({
+                  ...d,
+                  pose: {
+                    ...d.pose,
+                    rotationX: 0,
+                    rotationY: 180,
+                    rotationZ: 0,
+                  },
+                })
+              }
+            >
+              Back
+            </button>
+            <span className="tool-divider" />
+            <button
+              type="button"
+              onClick={() => setZoom((v) => Math.max(0.6, v - 0.1))}
+              disabled={zoom <= 0.6}
+              aria-label="Zoom out"
+            >
+              <ZoomOut size={16} />
+            </button>
+            <span className="zoom-label">{Math.round(zoom * 100)}%</span>
+            <button
+              type="button"
+              onClick={() => setZoom((v) => Math.min(1.6, v + 0.1))}
+              disabled={zoom >= 1.6}
+              aria-label="Zoom in"
+            >
+              <ZoomIn size={16} />
+            </button>
           </div>
         </div>
         <div className="stage-caption">
+          <span className="specimen-label">CHARACTER / 3D VIEWPORT</span>
           <span>{d.name}</span>
           <p>
             {photoMode
               ? "Make it picture perfect."
-              : "Small shapes. Big personality."}
+              : "A little character. A whole new dimension."}
           </p>
         </div>
         <footer className="stage-footer">
           <span className="stage-hint">
             <MousePointer2 size={13} />
-            {state.preferences.lookAt
-              ? "Move your cursor. Say hello."
-              : "Made to feel alive."}
+            Drag to rotate · Arrow keys to fine-tune
           </span>
           <Button
             onClick={() => setPhotoMode((v) => !v)}
@@ -402,6 +494,61 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
             <CircleHelp size={17} />
           </Button>
         </footer>
+        {!photoMode && (
+          <section
+            className="collection-dock"
+            aria-label="Character collection"
+          >
+            <div className="collection-heading">
+              <span>
+                Collection <b>{state.characters.length}</b>
+              </span>
+              <small>YOUR CAST OF CHARACTERS</small>
+            </div>{" "}
+            <div className="collection-track">
+              {state.characters.map((c) => (
+                <button
+                  type="button"
+                  key={c.id}
+                  className={`collection-tile ${c.id === d.id ? "selected" : ""}`}
+                  aria-pressed={c.id === d.id}
+                  onClick={() => {
+                    edit({
+                      ...state,
+                      selectedId: c.id,
+                      expression: "",
+                      animation: "idle",
+                    });
+                    setRestart((v) => v + 1);
+                  }}
+                >
+                  <Character
+                    document={{
+                      ...c,
+                      pose: { ...c.pose, rotationX: 0, rotationY: 0 },
+                    }}
+                    ambient={false}
+                    playing={false}
+                  />
+                  <span>{c.name}</span>
+                  {c.id === d.id && (
+                    <Check className="selection-check" size={14} />
+                  )}
+                </button>
+              ))}
+              <button
+                type="button"
+                className="collection-tile new-tile"
+                onClick={() => setNewOpen(true)}
+              >
+                <span className="new-icon">
+                  <Plus size={23} />
+                </span>
+                <span>New character</span>
+              </button>
+            </div>
+          </section>
+        )}
         <div className="mobile-notice">
           NX Alive Studio funciona melhor em uma tela maior.
         </div>
@@ -411,13 +558,11 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
           <div className="editor-scroll">
             <header className="editor-header">
               <div>
-                <span className="eyebrow">YOUR LITTLE CHARACTER LAB</span>
-                <h1>
-                  {tab === "avatar" ? "Meet your next mascot." : title(tab)}
-                </h1>
+                <span className="eyebrow">CHARACTER INSPECTOR</span>
+                <h1>{tab === "avatar" ? "Make it yours." : title(tab)}</h1>
                 <p>
                   {tab === "avatar"
-                    ? "Pick a personality. Make it yours."
+                    ? "Shape the details that make a character."
                     : `${d.name} · ${tab === "pose" ? "A few little adjustments. A whole new character." : tab === "expressions" ? "A face for every feeling." : tab === "animations" ? "Give your character a little life." : "Ready to meet the rest of your world."}`}
                 </p>
               </div>
@@ -458,40 +603,11 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
                   <span>YOUR CHARACTERS</span>
                   <span>{state.characters.length} in your collection</span>
                 </div>
-                <div className="avatar-grid">
-                  {state.characters.map((c) => (
-                    <button
-                      type="button"
-                      key={c.id}
-                      className={`avatar-tile ${c.id === d.id ? "selected" : ""}`}
-                      aria-pressed={c.id === d.id}
-                      onClick={() => {
-                        edit({
-                          ...state,
-                          selectedId: c.id,
-                          expression: "",
-                          animation: "idle",
-                        });
-                        setRestart((v) => v + 1);
-                      }}
-                    >
-                      <Character document={c} ambient={false} playing={false} />
-                      <span>{c.name}</span>
-                      {c.id === d.id && (
-                        <Check className="selection-check" size={14} />
-                      )}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    className="avatar-tile new-tile"
-                    onClick={() => setNewOpen(true)}
-                  >
-                    <span className="new-icon">
-                      <Plus size={23} />
-                    </span>
-                    <span>New character</span>
-                  </button>
+                <div className="inspector-portrait">
+                  <Character document={d} ambient={false} playing={false} />
+                  <span>
+                    <Box size={12} /> VOLUMETRIC CHARACTER
+                  </span>
                 </div>
                 <div className="selected-summary">
                   <div>
@@ -539,12 +655,30 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
                     </Button>
                   </div>
                 </div>
+                <Card title="Surface" detail="A soft finish, from every angle.">
+                  <Color
+                    label="Body color"
+                    value={d.colors.body}
+                    onChange={(body) =>
+                      change({ ...d, colors: { ...d.colors, body } })
+                    }
+                  />
+                  <Color
+                    label="Eye color"
+                    value={d.colors.eyes}
+                    onChange={(eyes) =>
+                      change({ ...d, colors: { ...d.colors, eyes } })
+                    }
+                  />
+                  <Button onClick={() => setTab("pose")} className="full-width">
+                    Edit shape & face <ArrowUpRight size={14} />
+                  </Button>
+                </Card>
                 <div className="quiet-note">
                   <Sparkles size={17} />
                   <p>
-                    A body, a face, a spark of personality.
-                    <br />
-                    That's all it takes to bring an idea to life.
+                    Start with a shape. Explore every angle. Your changes are
+                    saved as you go.
                   </p>
                 </div>
               </>
@@ -630,7 +764,7 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
                 </Card>
                 <Card
                   title="Orientation"
-                  detail="A simple 2D tilt, with simulated X/Y turning."
+                  detail="Rotate in 3D. Drag the character or enter an angle."
                   onReset={() =>
                     change({
                       ...d,
@@ -643,8 +777,8 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
                     })
                   }
                 >
-                  {poseRange("Rotation X", "rotationX", -60, 60)}
-                  {poseRange("Rotation Y", "rotationY", -60, 60)}
+                  {poseRange("Rotation X", "rotationX", -180, 180)}
+                  {poseRange("Rotation Y", "rotationY", -180, 180)}
                   {poseRange("Rotation Z", "rotationZ", -180, 180)}
                 </Card>
               </>
@@ -1023,20 +1157,7 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
                 <RotateCcw size={17} />
               </Button>
             </div>
-            <nav className="editor-tabs" aria-label="Editor sections">
-              {tabs.map(([id, label, Icon]) => (
-                <button
-                  type="button"
-                  aria-current={tab === id ? "page" : undefined}
-                  className={tab === id ? "active" : ""}
-                  key={id}
-                  onClick={() => setTab(id)}
-                >
-                  <Icon size={19} />
-                  <span>{label}</span>
-                </button>
-              ))}
-            </nav>
+
             <div className="save-status">
               <i />
               {status}
@@ -1068,13 +1189,15 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
             disabled={busy}
             variant="default"
             onClick={() =>
-              run(() =>
-                photo(
-                  d,
-                  { expression: state.expression, background: bg },
-                  "png",
-                ),
-              )
+              run(async () => {
+                if (!viewportRef.current)
+                  throw Error("The 3D preview is not ready.");
+                download(
+                  await viewportRef.current.capture(bg),
+                  `${d.id}-3d.png`,
+                  "image/png",
+                );
+              })
             }
           >
             <Download size={16} />
@@ -1092,7 +1215,7 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
               )
             }
           >
-            Export SVG
+            Export flat SVG
           </Button>
           <Button onClick={() => setPhotoMode(false)}>
             <X size={16} />
@@ -1116,6 +1239,7 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
         description="Give your little friend a name."
       >
         <form
+          noValidate
           onSubmit={(e) => {
             e.preventDefault();
             const name = String(
@@ -1180,38 +1304,15 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
             Ctrl / ⌘ Z to undo. Add Shift to redo. Your collection is saved on
             this device.
           </p>
-          <label>
-            <input
-              type="checkbox"
-              checked={state.preferences.lookAt}
-              onChange={(e) =>
-                edit({
-                  ...state,
-                  preferences: {
-                    ...state.preferences,
-                    lookAt: e.target.checked,
-                  },
-                })
-              }
-            />
-            Eyes follow cursor
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={state.preferences.hover}
-              onChange={(e) =>
-                edit({
-                  ...state,
-                  preferences: {
-                    ...state.preferences,
-                    hover: e.target.checked,
-                  },
-                })
-              }
-            />
-            React on hover
-          </label>
+          <p>
+            <strong>3D viewport</strong> · Drag to rotate. Arrow keys turn the
+            character; Home restores the front view. Use Front, Side and Back
+            for precise views. Surface shows the geometry guides.
+          </p>
+          <p>
+            <strong>Photo mode</strong> · PNG captures your current 3D view.
+            Flat SVG is a separate 2D illustration.
+          </p>
         </div>
       </Modal>
       <Modal
@@ -1220,7 +1321,7 @@ export function CharacterStudio({ initialId }: { initialId?: string }) {
         title="Export preview"
         description={`${exportIds.length} animations included in your character.`}
       >
-        <Character
+        <Character3D
           document={exported}
           animation={exportIds[0]}
           className="export-preview"
@@ -1318,6 +1419,7 @@ function NewCharacter({
       description="Start with a simple shape. The personality is up to you."
     >
       <form
+        noValidate
         onSubmit={(e) => {
           e.preventDefault();
           try {
@@ -1459,6 +1561,7 @@ function ExpressionEditor({
         className="draft-preview"
       />
       <form
+        noValidate
         onSubmit={(ev) => {
           ev.preventDefault();
           if (e.name.trim()) onSave({ ...e, name: e.name.trim() });
@@ -1552,6 +1655,7 @@ function AnimationEditor({
         className="draft-preview"
       />
       <form
+        noValidate
         onSubmit={(e) => {
           e.preventDefault();
           if (a.name.trim())

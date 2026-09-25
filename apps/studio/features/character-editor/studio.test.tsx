@@ -10,6 +10,7 @@ import {
 import { CharacterStudio } from "./character-studio";
 import { storageKey } from "./store";
 import { importSvg } from "./export";
+vi.mock("@nx-alive/react/three",()=>({Character3D:()=>null}));
 beforeEach(() => {
   localStorage.clear();
   vi.stubGlobal("matchMedia", () => ({

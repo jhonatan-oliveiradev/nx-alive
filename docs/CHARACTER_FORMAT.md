@@ -5,7 +5,7 @@ A character has one body definition, one face, a pose, colors, metadata and reus
 - Canvas: width/height in SVG units (presets use 400×400).
 - Body: circle, blob, cloud, capsule, rounded-square or custom path/viewBox; optional visor and antennas.
 - Face: eye and mouth presets, spacing, scale, rotation and offsets.
-- Pose: x/y, overall scale, width/height and X/Y/Z orientation. X/Y are a 2D approximation.
+- Pose: x/y, overall scale, width/height and X/Y/Z orientation. All three angles accept -180° to 180° and rotate the real mesh using YXZ Euler order. The legacy flat renderer remains an approximation.
 - Colors: six-digit hex values; no external paint URLs.
 - Expressions: eye/mouth selection, relative face offsets, scale, tilt and blush.
 - Animations: strictly ordered normalized frames from 0 to 1, duration, loop and valid expression reference. Frames transform the whole body; no individual bones.
